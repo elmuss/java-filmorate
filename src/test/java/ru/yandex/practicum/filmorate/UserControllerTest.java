@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class UserControllerTest {
     static UserController uc = new UserController();
+
     @Test
     void validateUserOk() {
         final User validUser = new User(
