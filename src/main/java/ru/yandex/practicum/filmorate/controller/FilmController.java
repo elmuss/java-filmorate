@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final static int MAX_DESCRIPTION_SIZE = 200;
+    private static final int MAX_DESCRIPTION_SIZE = 200;
     private final Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
