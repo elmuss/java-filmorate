@@ -24,11 +24,12 @@ public class UserController {
     }
 
     @PostMapping
-    public void create(@RequestBody User user) {
+    public User create(@RequestBody User user) {
         user.setId(getNextId());
         validate(user);
         users.put(user.getId(), user);
         log.info("Добавлен новый пользователь");
+        return user;
     }
 
     private long getNextId() {
@@ -41,10 +42,15 @@ public class UserController {
     }
 
     @PutMapping
-    public void update(@Validated(User.class) @RequestBody User newUser) {
+    public User update(@Validated(User.class) @RequestBody User newUser) {
+        if (!users.containsKey(newUser.getId())) {
+            throw new ValidationException("Такого фильма нет, обновление невозможно");
+        }
+
         validate(newUser);
         users.put(newUser.getId(), newUser);
         log.info("Данные пользователя обновлены");
+        return newUser;
     }
 
     public void validate(User user) {

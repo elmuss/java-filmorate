@@ -21,7 +21,7 @@ class FilmControllerTest {
                 "DUNE",
                 "fantasy",
                 LocalDate.of(2024, 3, 1),
-                Duration.ofMinutes(180));
+                1800);
 
         fc.validate(validFilm);
     }
@@ -33,7 +33,7 @@ class FilmControllerTest {
                 "DUNE",
                 "fantasy",
                 LocalDate.of(2024, 3, 1),
-                Duration.ofMinutes(0));
+                0);
 
         Exception exception = assertThrows(
                 ValidationException.class, () -> fc.validate(validFilm)
@@ -50,7 +50,7 @@ class FilmControllerTest {
                 "DUNE",
                 "*********************************************************************************************************************************************************************************************************",
                 LocalDate.of(2024, 3, 1),
-                Duration.ofMinutes(180));
+                1800);
 
         Exception exception = assertThrows(
                 ValidationException.class, () -> fc.validate(validFilm)
@@ -67,7 +67,7 @@ class FilmControllerTest {
                 "DUNE",
                 "fantasy",
                 LocalDate.of(1795, 3, 1),
-                Duration.ofMinutes(180));
+                1800);
 
         Exception exception = assertThrows(
                 ValidationException.class, () -> fc.validate(validFilm)

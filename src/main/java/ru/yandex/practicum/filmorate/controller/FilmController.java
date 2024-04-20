@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -23,11 +23,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public void create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         validate(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Добавлен новый фильм");
+        return film;
     }
 
     private long getNextId() {
@@ -40,10 +41,15 @@ public class FilmController {
     }
 
     @PutMapping
-    public void update(@Validated(Film.class) @RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) {
+        if (!films.containsKey(newFilm.getId())) {
+            throw new ValidationException("Такого фильма нет, обновление невозможно");
+        }
+
         validate(newFilm);
         films.put(newFilm.getId(), newFilm);
         log.info("Данные фильма обновлены");
+        return newFilm;
     }
 
     public void validate(Film film) {
@@ -56,9 +62,8 @@ public class FilmController {
             throw new ValidationException("Дата релиза фильма не должна быть раньше 28 декабря 1895 года");
         }
 
-        if (film.getDuration().getSeconds() <= 0) {
+        if (film.getDuration() <= 0) {
             throw new ValidationException("Продолжительность фильма должна быть больше нуля");
         }
-
     }
 }
