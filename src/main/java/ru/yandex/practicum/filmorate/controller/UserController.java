@@ -54,7 +54,6 @@ public class UserController {
     }
 
     public void validate(User user) {
-
         if (!user.getEmail().contains("@")) {
             throw new ValidationException("Электронная почта должна содержать символ @");
         }
@@ -65,6 +64,7 @@ public class UserController {
 
         if (user.getName() == null) {
             user.setName(user.getLogin());
+            log.info("Имя пользователя изменено на " + user.getName());
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {

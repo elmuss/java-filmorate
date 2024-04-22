@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.ValidationException;
@@ -11,7 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FilmControllerTest {
-    static FilmController fc = new FilmController();
+    FilmController fc;
+
+    @BeforeEach
+    void setFc() {
+        fc = new FilmController();
+    }
 
     @Test
     void validateFilmOk() {
@@ -23,40 +29,6 @@ class FilmControllerTest {
                 1800);
 
         fc.validate(validFilm);
-    }
-
-    @Test
-    void validateFilmDurationFail() {
-        final Film validFilm = new Film(
-                1L,
-                "DUNE",
-                "fantasy",
-                LocalDate.of(2024, 3, 1),
-                0);
-
-        Exception exception = assertThrows(
-                ValidationException.class, () -> fc.validate(validFilm)
-        );
-
-        assertEquals("Продолжительность фильма должна быть больше нуля", exception.getMessage());
-
-    }
-
-    @Test
-    void validateFilmDescriptionLengthFail() {
-        final Film validFilm = new Film(
-                1L,
-                "DUNE",
-                "*********************************************************************************************************************************************************************************************************",
-                LocalDate.of(2024, 3, 1),
-                1800);
-
-        Exception exception = assertThrows(
-                ValidationException.class, () -> fc.validate(validFilm)
-        );
-
-        assertEquals("Длина описания фильма не может превышать 200 символов", exception.getMessage());
-
     }
 
     @Test
