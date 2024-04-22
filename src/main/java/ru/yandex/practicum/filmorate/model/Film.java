@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +17,6 @@ public class Film {
     @Size(max = 200)
     private String description;
     private LocalDate releaseDate;
-    @Min(0)
+    @Positive
     private Integer duration;
 }

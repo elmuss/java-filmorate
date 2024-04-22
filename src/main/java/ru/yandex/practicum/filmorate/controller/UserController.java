@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -42,7 +41,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Validated(User.class) @RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) {
         if (!users.containsKey(newUser.getId())) {
             throw new ValidationException("Такого фильма нет, обновление невозможно");
         }
