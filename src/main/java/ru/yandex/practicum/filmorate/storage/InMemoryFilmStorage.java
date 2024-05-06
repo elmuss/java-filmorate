@@ -72,10 +72,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Указан id несуществующего фильма.");
         }
 
-        if (!films.containsKey(userId)) {
-            throw new NotFoundException("Указан id несуществующего пользователя");
-        }
-
         films.get(id).getLikes().add(userId);
     }
 
@@ -85,8 +81,8 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Указан id несуществующего фильма.");
         }
 
-        if (!films.containsKey(userId)) {
-            throw new NotFoundException("Указан id несуществующего пользователя");
+        if (!films.get(id).getLikes().contains(userId)) {
+            throw new NotFoundException("Указан id несуществующего лайка");
         }
 
         films.get(id).getLikes().remove(userId);
