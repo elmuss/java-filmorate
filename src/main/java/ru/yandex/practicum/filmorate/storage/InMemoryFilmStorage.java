@@ -68,10 +68,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long id, Long userId) {
-        if (!films.containsKey(id)) {
-            throw new NotFoundException("Указан id несуществующего фильма.");
-        }
-
         films.get(id).getLikes().add(userId);
     }
 
