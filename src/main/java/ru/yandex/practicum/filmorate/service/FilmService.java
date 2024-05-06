@@ -44,8 +44,6 @@ public class FilmService {
     }
 
     public void deleteLike(Long id, Long userId) {
-        filmStorage.get(id);
-        userStorage.get(userId);
         filmStorage.deleteLike(id, userId);
     }
 
