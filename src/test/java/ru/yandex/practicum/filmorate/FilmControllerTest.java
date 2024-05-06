@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 
@@ -13,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FilmControllerTest {
     FilmController fc;
+    FilmService fs;
+    InMemoryFilmStorage filmStorage;
 
     @BeforeEach
     void setFc() {
-        fc = new FilmController();
+        fc = new FilmController(fs = new FilmService(filmStorage = new InMemoryFilmStorage()));
     }
 
     @Test
@@ -26,9 +30,9 @@ class FilmControllerTest {
                 "DUNE",
                 "fantasy",
                 LocalDate.of(2024, 3, 1),
-                1800);
+                1800, null);
 
-        fc.validate(validFilm);
+        filmStorage.validate(validFilm);
     }
 
     @Test
@@ -38,10 +42,10 @@ class FilmControllerTest {
                 "DUNE",
                 "fantasy",
                 LocalDate.of(1795, 3, 1),
-                1800);
+                1800, null);
 
         Exception exception = assertThrows(
-                ValidationException.class, () -> fc.validate(validFilm)
+                ValidationException.class, () -> filmStorage.validate(validFilm)
         );
 
         assertEquals("Дата релиза фильма не должна быть раньше 28 декабря 1895 года", exception.getMessage());
