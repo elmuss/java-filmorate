@@ -69,7 +69,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addLike(Long id, Long userId) {
         if (!films.containsKey(id)) {
-            throw new NotFoundException("Такого фильма нет.");
+            throw new NotFoundException("Указан id несуществующего фильма.");
+        }
+
+        if (!films.containsKey(userId)) {
+            throw new NotFoundException("Указан id несуществующего пользователя");
         }
 
         films.get(id).getLikes().add(userId);
@@ -77,6 +81,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void deleteLike(Long id, Long userId) {
+        if (!films.containsKey(id)) {
+            throw new NotFoundException("Указан id несуществующего фильма.");
+        }
+
+        if (!films.containsKey(userId)) {
+            throw new NotFoundException("Указан id несуществующего пользователя");
+        }
+
         films.get(id).getLikes().remove(userId);
 
     }
