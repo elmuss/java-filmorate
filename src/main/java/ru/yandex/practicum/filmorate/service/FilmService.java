@@ -39,14 +39,12 @@ public class FilmService {
     }
 
     public void addLike(Long id, Long userId) {
-        if (filmStorage.get(id) == null) {
-            throw new NotFoundException("Указан id несуществующего фильма.");
+        if (filmStorage.get(id) == null || userStorage.get(userId) == null) {
+            throw new NotFoundException("Указан id несуществующего фильма или несуществующего пользователя.");
+        } else {
+            filmStorage.addLike(id, userId);
         }
 
-        if (userStorage.get(userId) == null) {
-            throw new NotFoundException("Указан несуществующий пользователь.");
-        }
-        filmStorage.addLike(id, userId);
     }
 
     public void deleteLike(Long id, Long userId) {
