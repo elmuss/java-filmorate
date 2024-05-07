@@ -85,15 +85,3 @@ public class InMemoryFilmStorage implements FilmStorage {
         return sortedFilms.stream().limit(count).toList();
     }
 }
-/*List<Film> sortedFilms = films.values().stream().filter(o -> o.getLikes() != null)
-                .sorted(Comparator.comparingInt(o -> o.getLikes().size())).toList().reversed();
-
-        /*List<Film> popularFilms;
-
-        if (count > sortedFilms.size() || count == sortedFilms.size()) {
-            popularFilms = sortedFilms.stream().limit(sortedFilms.size()).toList();
-        } else {
-            popularFilms = sortedFilms.stream().limit(count).toList();
-        }
-
-        return sortedFilms.stream().limit(count).toList();*/
