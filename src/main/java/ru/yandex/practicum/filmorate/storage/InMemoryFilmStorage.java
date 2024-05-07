@@ -78,20 +78,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getPopular(Integer count) {
-        Collection<Film> popularFilmList = new ArrayList<>();
-        List<Film> sortedFilmList = films.values().stream()
-                .sorted(Comparator.comparingInt(o -> o.getLikes().size())).toList();
+    public List<Film> getPopular(Long count) {
+        List<Film> sortedFilms = films.values().stream().filter(o -> o.getLikes() != null)
+                .sorted(Comparator.comparingInt(o -> o.getLikes().size())).toList().reversed();
 
-        if (count > sortedFilmList.size() || count == sortedFilmList.size()) {
-            popularFilmList.addAll(sortedFilmList);
+        return sortedFilms.stream().limit(count).toList();
+    }
+}
+/*List<Film> sortedFilms = films.values().stream().filter(o -> o.getLikes() != null)
+                .sorted(Comparator.comparingInt(o -> o.getLikes().size())).toList().reversed();
+
+        /*List<Film> popularFilms;
+
+        if (count > sortedFilms.size() || count == sortedFilms.size()) {
+            popularFilms = sortedFilms.stream().limit(sortedFilms.size()).toList();
         } else {
-            for (int i = 0; i < count; i++) {
-                popularFilmList.add(sortedFilmList.get(i));
-            }
+            popularFilms = sortedFilms.stream().limit(count).toList();
         }
 
-        return popularFilmList;
-    }
-
-}
+        return sortedFilms.stream().limit(count).toList();*/

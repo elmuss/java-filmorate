@@ -34,14 +34,14 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationError(final ValidationException e) {
-        log.info("400 {}", e.getMessage());
+        log.info("error 400 {}", e.getMessage());
         return Map.of("Ошибка валидации", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFoundError(final NotFoundException e) {
-        log.info("404 {}", e.getMessage());
+        log.info("error 404 {}", e.getMessage());
         return Map.of("Ресурс не найден", e.getMessage());
     }
 }

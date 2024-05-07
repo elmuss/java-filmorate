@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -49,7 +50,7 @@ public class FilmService {
         filmStorage.deleteLike(id, userId);
     }
 
-    public Collection<Film> getPopular(Integer count) {
+    public List<Film> getPopular(Long count) {
         return filmStorage.getPopular(count);
     }
 

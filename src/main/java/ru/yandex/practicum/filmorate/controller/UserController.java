@@ -29,7 +29,6 @@ public class UserController {
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         userService.create(user);
-        log.info("Добавлен новый пользователь");
         return user;
     }
 
