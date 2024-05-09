@@ -16,38 +16,38 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FilmControllerTest {
-    FilmController fc;
-    FilmService fs;
     InMemoryFilmStorage filmStorage;
 
     InMemoryUserStorage userStorage;
 
     @BeforeEach
     void setFc() {
-        fc = new FilmController(fs = new FilmService(filmStorage = new InMemoryFilmStorage(),
-                userStorage = new InMemoryUserStorage()));
+        filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
     }
 
     @Test
     void validateFilmOk() {
-        final Film validFilm = new Film(
-                1L,
-                "DUNE",
-                "fantasy",
-                LocalDate.of(2024, 3, 1),
-                1800, null);
+        final Film validFilm = new Film();
+        validFilm.setId(1L);
+        validFilm.setName("DUNE");
+        validFilm.setDescription("fantasy");
+        validFilm.setReleaseDate(LocalDate.of(2024, 3, 1));
+        validFilm.setDuration(1800);
+        validFilm.setLikes(new HashSet<>());
 
         filmStorage.validate(validFilm);
     }
 
     @Test
     void validateFilmReleaseDateFail() {
-        final Film validFilm = new Film(
-                1L,
-                "DUNE",
-                "fantasy",
-                LocalDate.of(1795, 3, 1),
-                1800, null);
+        final Film validFilm = new Film();
+        validFilm.setId(1L);
+        validFilm.setName("DUNE");
+        validFilm.setDescription("fantasy");
+        validFilm.setReleaseDate(LocalDate.of(1795, 3, 1));
+        validFilm.setDuration(1800);
+        validFilm.setLikes(new HashSet<>());
 
         Exception exception = assertThrows(
                 ValidationException.class, () -> filmStorage.validate(validFilm)
@@ -59,54 +59,55 @@ class FilmControllerTest {
 
     @Test
     void getPopularFilms() {
-        final Film film1 = new Film(
-                1L,
-                "DUNE",
-                "fantasy",
-                LocalDate.of(2020, 3, 1),
-                1800, new HashSet<>());
+        final Film film1 = new Film();
+        film1.setId(1L);
+        film1.setName("DUNE");
+        film1.setDescription("fantasy");
+        film1.setReleaseDate(LocalDate.of(2020, 3, 1));
+        film1.setDuration(1800);
+        film1.setLikes(new HashSet<>());
 
-        final Film film2 = new Film(
-                2L,
-                "DUNE2",
-                "fantasy",
-                LocalDate.of(2021, 3, 1),
-                2800, new HashSet<>());
+        final Film film2 = new Film();
+        film2.setId(2L);
+        film2.setName("DUNE2");
+        film2.setDescription("fantasy");
+        film2.setReleaseDate(LocalDate.of(2021, 3, 1));
+        film2.setDuration(2800);
+        film2.setLikes(new HashSet<>());
 
-        final Film film3 = new Film(
-                3L,
-                "DUNE3",
-                "fantasy",
-                LocalDate.of(2022, 3, 1),
-                3800, new HashSet<>());
+        final Film film3 = new Film();
+        film3.setId(3L);
+        film3.setName("DUNE3");
+        film3.setDescription("fantasy");
+        film3.setReleaseDate(LocalDate.of(2022, 3, 1));
+        film3.setDuration(3800);
+        film3.setLikes(new HashSet<>());
 
-        final Film film4 = new Film(
-                4L,
-                "DUNE4",
-                "fantasy",
-                LocalDate.of(2023, 3, 1),
-                3800, new HashSet<>());
+        final Film film4 = new Film();
+        film4.setId(4L);
+        film4.setName("DUNE4");
+        film4.setDescription("fantasy");
+        film4.setReleaseDate(LocalDate.of(2023, 3, 1));
+        film4.setDuration(4800);
+        film4.setLikes(new HashSet<>());
 
-        User user1 = new User(
-                1L,
-                "999@999",
-                "999",
-                "A",
-                LocalDate.of(2000, 3, 1), null);
+        User user1 = new User("999@999", "999");
+        user1.setId(1L);
+        user1.setName("A");
+        user1.setBirthday(LocalDate.of(2000, 3, 1));
+        user1.setFriends(new HashSet<>());
 
-        User user2 = new User(
-                2L,
-                "999@000",
-                "000",
-                "B",
-                LocalDate.of(2000, 3, 2), null);
+        User user2 = new User("999@000", "000");
+        user2.setId(2L);
+        user2.setName("B");
+        user2.setBirthday(LocalDate.of(2000, 3, 2));
+        user2.setFriends(new HashSet<>());
 
-        User user3 = new User(
-                3L,
-                "000@000",
-                "111",
-                "C",
-                LocalDate.of(2000, 3, 3), null);
+        User user3 = new User("000@000", "111");
+        user3.setId(3L);
+        user3.setName("C");
+        user3.setBirthday(LocalDate.of(2000, 3, 3));
+        user3.setFriends(new HashSet<>());
 
         userStorage.create(user1);
         userStorage.create(user2);

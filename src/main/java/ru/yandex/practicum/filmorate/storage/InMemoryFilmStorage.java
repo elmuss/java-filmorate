@@ -16,7 +16,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void create(Film film) {
         validate(film);
         film.setId(getNextId());
-        film.setLikes(new HashSet<>());
         films.put(film.getId(), film);
     }
 
@@ -69,12 +68,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long id, Long userId) {
-        films.get(id).getLikes().add(userId);
+        if (films.containsKey(id)) {
+            films.get(id).getLikes().add(userId);
+        } else {
+            throw new NotFoundException("Такого фильма нет.");
+        }
+
     }
 
     @Override
     public void deleteLike(Long id, Long userId) {
-        films.get(id).getLikes().remove(userId);
+        if (films.containsKey(id)) {
+            films.get(id).getLikes().remove(userId);
+        } else {
+            throw new NotFoundException("Такого фильма нет.");
+        }
     }
 
     @Override

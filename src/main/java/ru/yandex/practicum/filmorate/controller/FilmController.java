@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectArgumentException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
@@ -44,6 +45,7 @@ public class FilmController {
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) {
         filmService.delete(id);
+        log.info("Удален фильм с id {}", id);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -60,6 +62,11 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") Long count) {
+        if (count < 0) {
+            throw new IncorrectArgumentException("Передано отрицательное значение count");
+        } else if (count == 0) {
+            throw new IncorrectArgumentException("Передано значение count, равное 0");
+        }
         return filmService.getPopular(count);
     }
 }

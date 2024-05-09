@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
@@ -39,15 +40,19 @@ public class FilmService {
     }
 
     public void addLike(Long id, Long userId) {
-        filmStorage.get(id);
-        userStorage.get(userId);
-        filmStorage.addLike(id, userId);
+        if (userStorage.getUsers().containsKey(userId)) {
+            filmStorage.addLike(id, userId);
+        } else {
+            throw new NotFoundException("Такого пользователя нет.");
+        }
     }
 
     public void deleteLike(Long id, Long userId) {
-        filmStorage.get(id);
-        userStorage.get(userId);
-        filmStorage.deleteLike(id, userId);
+        if (userStorage.getUsers().containsKey(userId)) {
+            filmStorage.deleteLike(id, userId);
+        } else {
+            throw new NotFoundException("Такого пользователя нет.");
+        }
     }
 
     public List<Film> getPopular(Long count) {
