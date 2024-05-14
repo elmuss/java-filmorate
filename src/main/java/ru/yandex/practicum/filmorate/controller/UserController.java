@@ -1,75 +1,68 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable long id) {
+        return userService.get(id);
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        user.setId(getNextId());
-        validate(user);
-        users.put(user.getId(), user);
-        log.info("Добавлен новый пользователь");
+    public User create(@Valid @RequestBody User user) {
+        userService.create(user);
         return user;
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId())) {
-            throw new ValidationException("Такого фильма нет, обновление невозможно");
-        }
-
-        validate(newUser);
-        users.put(newUser.getId(), newUser);
+        userService.update(newUser);
         log.info("Данные пользователя обновлены");
         return newUser;
     }
 
-    public void validate(User user) {
-        if (!user.getEmail().contains("@")) {
-            throw new ValidationException("Электронная почта должна содержать символ @");
-        }
-
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен содержать пробелы");
-        }
-
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-            log.info("Имя пользователя изменено на " + user.getName());
-        }
-
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Введенная дата рождения не может быть позже сегодняшней даты");
-        }
-
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable long id) {
+        userService.delete(id);
     }
 
+    @PutMapping("/{id}/friends/{friendId}")
+    public User create(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriend(id, friendId);
+        log.info("Пользователь добавлен в список друзей");
+        return userService.get(friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFromFriends(@PathVariable long id, @PathVariable long friendId) {
+        userService.deleteFromFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getAllFriends(@PathVariable long id) {
+        return userService.getAllFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
 }
