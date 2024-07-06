@@ -28,12 +28,12 @@ public class UserDbStorage implements UserStorage {
     protected final JdbcTemplate jdbc;
     protected final UserRowMapper mapper;
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM USERS WHERE user_id = ?";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM USERS WHERE USER_ID = ?";
     private static final String INSERT_QUERY = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE id = ?";
-    private static final String DELETE_FROM_FRIENDS_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-    private static final String FIND_FRIENDS_QUERY = "SELECT friend_id FROM friends WHERE user_id = ?";
+    private static final String DELETE_FROM_FRIENDS_QUERY = "DELETE FROM friends WHERE USER_ID = ? AND friend_id = ?";
+    private static final String FIND_FRIENDS_QUERY = "SELECT friend_id FROM friends WHERE USER_ID = ?";
     private static final String INSERT_FRIEND_QUERY = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
 
 

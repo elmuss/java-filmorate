@@ -38,9 +38,13 @@ public class FilmDbStorage implements FilmStorage {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM FILMS WHERE FILM_ID = ?";
     private static final String FIND_MPA_QUERY = "SELECT FILM_MPA FROM FILMS WHERE FILM_ID = ?";
     private static final String FIND_LIST_OF_GENRES_QUERY = "SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = ?";
-    private static final String INSERT_QUERY = "INSERT INTO films (FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, FILM_MPA) VALUES (?, ?, ?, ?, ?)";
+    private static final String FIND_LIST_OF_EMPTY_GENRES_QUERY = "SELECT FG.GENRE_ID FROM FILMS F" +
+            "JOIN FILMS_GENRES FG ON F.FILM_ID = FG.FILM_ID WHERE F.FILM_ID = ? LIMIT(1)";
+    private static final String INSERT_QUERY = "INSERT INTO films (FILM_NAME, DESCRIPTION, RELEASE_DATE," +
+            "DURATION, FILM_MPA) VALUES (?, ?, ?, ?, ?)";
     private static final String INSERT_FILMS_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE films SET FILM_NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, FILM_MPA = ? WHERE FILM_ID = ?";
+    private static final String UPDATE_QUERY = "UPDATE films SET FILM_NAME = ?, DESCRIPTION = ?," +
+            "RELEASE_DATE = ?, DURATION = ?, FILM_MPA = ? WHERE FILM_ID = ?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String INSERT_LIKE_QUERY = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
@@ -130,21 +134,17 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
 
-            if (!listOfGenresId.isEmpty()) {
-                List<Genre> listOfGenres = new ArrayList<>();
+                if (!listOfGenresId.isEmpty()) {
 
-                for (Long genreId : listOfGenresId) {
-                    if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
-                        listOfGenres.add(genreStorage.getGenre(genreId));
+                    List<Genre> listOfGenres = new ArrayList<>();
+
+                    for (Long genreId : listOfGenresId) {
+                        if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
+                            listOfGenres.add(genreStorage.getGenre(genreId));
+                        }
                     }
+                    filmToReturn.setGenres(listOfGenres);
                 }
-                filmToReturn.setGenres(listOfGenres);
-
-            } else {
-                List<Genre> emptyListOfGenres = new ArrayList<>();
-                emptyListOfGenres.add(new Genre());
-                filmToReturn.setGenres(emptyListOfGenres);
-            }
             return filmToReturn;
 
         } catch (EmptyResultDataAccessException ignored) {

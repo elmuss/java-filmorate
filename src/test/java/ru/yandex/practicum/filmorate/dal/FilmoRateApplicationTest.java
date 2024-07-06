@@ -1,4 +1,4 @@
-/*package ru.yandex.practicum.filmorate.dal;
+package ru.yandex.practicum.filmorate.dal;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -17,8 +17,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @ContextConfiguration(classes = {UserDbStorage.class, UserRowMapper.class})
-class FilmoRateApplicationTests {
+class FilmoRateApplicationTest {
     private final UserDbStorage userStorage;
+    private final UserRowMapper userRowMapper;
 
     @Test
     public void testFindUserById() {
@@ -32,4 +33,4 @@ class FilmoRateApplicationTests {
                         assertThat(u).hasFieldOrPropertyWithValue("id", 1)
                 );
     }
-}*/
+}
