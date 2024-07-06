@@ -134,17 +134,21 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
 
-                if (!listOfGenresId.isEmpty()) {
+            if (!listOfGenresId.isEmpty()) {
+                List<Genre> listOfGenres = new ArrayList<>();
 
-                    List<Genre> listOfGenres = new ArrayList<>();
-
-                    for (Long genreId : listOfGenresId) {
-                        if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
-                            listOfGenres.add(genreStorage.getGenre(genreId));
-                        }
+                for (Long genreId : listOfGenresId) {
+                    if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
+                        listOfGenres.add(genreStorage.getGenre(genreId));
                     }
-                    filmToReturn.setGenres(listOfGenres);
                 }
+                filmToReturn.setGenres(listOfGenres);
+
+            } else {
+                List<Genre> emptyListOfGenres = new ArrayList<>();
+                emptyListOfGenres.add(new Genre());
+                filmToReturn.setGenres(emptyListOfGenres);
+            }
             return filmToReturn;
 
         } catch (EmptyResultDataAccessException ignored) {
