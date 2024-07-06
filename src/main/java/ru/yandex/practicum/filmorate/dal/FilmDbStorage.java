@@ -144,10 +144,6 @@ public class FilmDbStorage implements FilmStorage {
                 }
                 filmToReturn.setGenres(listOfGenres);
 
-            } else {
-                List<Genre> emptyListOfGenres = new ArrayList<>();
-                emptyListOfGenres.add(new Genre());
-                filmToReturn.setGenres(emptyListOfGenres);
             }
             return filmToReturn;
 
