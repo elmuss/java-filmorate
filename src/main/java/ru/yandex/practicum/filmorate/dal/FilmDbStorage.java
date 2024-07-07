@@ -100,7 +100,7 @@ public class FilmDbStorage implements FilmStorage {
                 jdbc.update(connection -> {
                     PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
                     stmt.setLong(1, film.getId());
-                    stmt.setLong(2, 0);
+                    stmt.setLong(2, 0L);
                     return stmt;
                 });
             }
