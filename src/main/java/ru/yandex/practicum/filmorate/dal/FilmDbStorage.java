@@ -97,13 +97,13 @@ public class FilmDbStorage implements FilmStorage {
                 });
             }
         } else {
-                jdbc.update(connection -> {
-                    PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
-                    stmt.setLong(1, film.getId());
-                    stmt.setLong(2, 0L);
-                    return stmt;
-                });
-            }
+            jdbc.update(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
+                stmt.setLong(1, film.getId());
+                stmt.setLong(2, 0L);
+                return stmt;
+            });
+        }
         return film;
     }
 
@@ -142,20 +142,20 @@ public class FilmDbStorage implements FilmStorage {
             filmToReturn.setMpa(mpaStorage.get(mpaId));
 
             List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
+            List<Genre> listOfGenres = new ArrayList<>();
 
-            if (!listOfGenresId.isEmpty()) {
-                List<Genre> listOfGenres = new ArrayList<>();
-
-                for (Long genreId : listOfGenresId) {
-                    if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
-                        listOfGenres.add(genreStorage.getGenre(genreId));
-                    }
-                }
+            if (listOfGenresId.get(0) == 0L) {
+                listOfGenres.add(new Genre(0L, "0"));
                 filmToReturn.setGenres(listOfGenres);
-
             }
-            return filmToReturn;
 
+            for (Long genreId : listOfGenresId) {
+                if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
+                    listOfGenres.add(genreStorage.getGenre(genreId));
+                }
+            }
+            filmToReturn.setGenres(listOfGenres);
+            return filmToReturn;
         } catch (EmptyResultDataAccessException ignored) {
             throw new NotFoundException("Такого фильма нет.");
         }
