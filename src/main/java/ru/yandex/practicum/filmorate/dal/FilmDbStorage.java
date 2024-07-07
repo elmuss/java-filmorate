@@ -87,14 +87,23 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setMpa(mpaStorage.get(mpaId));
 
-        for (Genre genre : genres) {
-            jdbc.update(connection -> {
-                PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
-                stmt.setLong(1, film.getId());
-                stmt.setLong(2, genre.getId());
-                return stmt;
-            });
-        }
+        if (!genres.isEmpty()) {
+            for (Genre genre : genres) {
+                jdbc.update(connection -> {
+                    PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
+                    stmt.setLong(1, film.getId());
+                    stmt.setLong(2, genre.getId());
+                    return stmt;
+                });
+            }
+        } else {
+                jdbc.update(connection -> {
+                    PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
+                    stmt.setLong(1, film.getId());
+                    stmt.setLong(2, 0);
+                    return stmt;
+                });
+            }
         return film;
     }
 
