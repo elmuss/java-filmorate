@@ -20,7 +20,6 @@ public class UserService {
         if (user.getEmail().isEmpty()) {
             throw new ConditionsNotMetException("Имейл должен быть указан");
         }
-
         userDbStorage.create(user);
         log.info("Добавлен новый пользователь, id={}", user.getId());
 
@@ -47,7 +46,6 @@ public class UserService {
     public void delete(long id) {
         userDbStorage.delete(id);
     }
-
 
     public void addFriend(Long id, Long friendId) {
         userDbStorage.addFriend(id, friendId);

@@ -26,6 +26,6 @@ public class MpaDbStorage {
     }
 
     public Collection<Mpa> getAllMpa() {
-        return jdbc.query("select * from MPA", mpaMapper);
+        return jdbc.query("SELECT * FROM MPA", mpaMapper);
     }
 }

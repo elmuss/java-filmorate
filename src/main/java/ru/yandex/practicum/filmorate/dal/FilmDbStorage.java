@@ -38,16 +38,14 @@ public class FilmDbStorage implements FilmStorage {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM FILMS WHERE FILM_ID = ?";
     private static final String FIND_MPA_QUERY = "SELECT FILM_MPA FROM FILMS WHERE FILM_ID = ?";
     private static final String FIND_LIST_OF_GENRES_QUERY = "SELECT GENRE_ID FROM FILMS_GENRES WHERE FILM_ID = ?";
-    private static final String FIND_LIST_OF_EMPTY_GENRES_QUERY = "SELECT FG.GENRE_ID FROM FILMS F" +
-            "JOIN FILMS_GENRES FG ON F.FILM_ID = FG.FILM_ID WHERE F.FILM_ID = ? LIMIT(1)";
-    private static final String INSERT_QUERY = "INSERT INTO films (FILM_NAME, DESCRIPTION, RELEASE_DATE," +
+    private static final String INSERT_QUERY = "INSERT INTO FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE," +
             "DURATION, FILM_MPA) VALUES (?, ?, ?, ?, ?)";
     private static final String INSERT_FILMS_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE films SET FILM_NAME = ?, DESCRIPTION = ?," +
+    private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?," +
             "RELEASE_DATE = ?, DURATION = ?, FILM_MPA = ? WHERE FILM_ID = ?";
-    private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE id = ?";
-    private static final String INSERT_LIKE_QUERY = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-    private static final String DELETE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM FILMS WHERE id = ?";
+    private static final String INSERT_LIKE_QUERY = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
+    private static final String DELETE_LIKE_QUERY = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
     private static final String GET_POPULAR_FILMS = "SELECT  FILM_ID  FROM LIKES GROUP BY FILM_ID ORDER BY COUNT(USER_ID) DESC";
 
     @Override
@@ -75,19 +73,20 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(new HashSet<>());
 
         film.setGenres(new ArrayList<>());
-        for (Genre genre : genres) {
-            try {
-                if (genreStorage.getGenre(genre.getId()) != null) {
-                    film.getGenres().add(genreStorage.getGenre(genre.getId()));
+        if (genres != null) {
+            for (Genre genre : genres) {
+                try {
+                    if (genreStorage.getGenre(genre.getId()) != null) {
+                        film.getGenres().add(genreStorage.getGenre(genre.getId()));
+                    }
+                } catch (NotFoundException e) {
+                    throw new IncorrectArgumentException("Введен некорректный запрос");
                 }
-            } catch (NotFoundException e) {
-                throw new IncorrectArgumentException("Введен некорректный запрос");
             }
         }
-
         film.setMpa(mpaStorage.get(mpaId));
 
-        if (!genres.isEmpty()) {
+        if (genres != null) {
             for (Genre genre : genres) {
                 jdbc.update(connection -> {
                     PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
@@ -96,13 +95,6 @@ public class FilmDbStorage implements FilmStorage {
                     return stmt;
                 });
             }
-        } else {
-            jdbc.update(connection -> {
-                PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
-                stmt.setLong(1, film.getId());
-                stmt.setLong(2, 0L);
-                return stmt;
-            });
         }
         return film;
     }
@@ -144,14 +136,11 @@ public class FilmDbStorage implements FilmStorage {
             List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
             List<Genre> listOfGenres = new ArrayList<>();
 
-            if (listOfGenresId.get(0) == 0L) {
-                listOfGenres.add(new Genre(0L, "0"));
-                filmToReturn.setGenres(listOfGenres);
-            }
-
-            for (Long genreId : listOfGenresId) {
-                if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
-                    listOfGenres.add(genreStorage.getGenre(genreId));
+            if (!listOfGenresId.isEmpty()) {
+                for (Long genreId : listOfGenresId) {
+                    if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
+                        listOfGenres.add(genreStorage.getGenre(genreId));
+                    }
                 }
             }
             filmToReturn.setGenres(listOfGenres);
