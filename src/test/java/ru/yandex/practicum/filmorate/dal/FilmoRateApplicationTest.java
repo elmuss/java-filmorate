@@ -16,7 +16,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.util.HashSet;
+import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
@@ -38,13 +40,18 @@ class FilmoRateApplicationTest {
     }
 
     @Test
-    void testFindFilmByIdWithoutGenre() {
+    public void testFindFilmByIdWithoutGenre() {
 
         filmDbStorage.create(new Film("name", "description", new Date(1999 - 10 - 11), 100,
                 new Mpa(1L, "Комедия")));
         Film filmToGet = filmDbStorage.get(1);
+        Optional<Film> filmOptional = Optional.of(filmToGet);
 
-        assertEquals(1L, filmToGet.getId());
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("id", 1L)
+                );
     }
 
     @Test
