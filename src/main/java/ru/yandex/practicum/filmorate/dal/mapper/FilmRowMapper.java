@@ -25,7 +25,6 @@ public class FilmRowMapper implements RowMapper<Film> {
                     .duration(resultSet.getInt("duration"))
                     .likes(new HashSet<>())
                     .build();
-            films.put(id, film);
         }
         return film;
     }

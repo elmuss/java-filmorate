@@ -2,13 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.UserDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Service
 @Slf4j
@@ -36,11 +37,7 @@ public class UserService {
     }
 
     public User get(long id) {
-        if (userDbStorage.get(id) != null) {
-            return userDbStorage.get(id);
-        } else {
-            throw new NotFoundException("Пользователь с ID: " + id + " не найден");
-        }
+        return userDbStorage.get(id);
     }
 
     public void delete(long id) {
@@ -58,7 +55,11 @@ public class UserService {
     }
 
     public Collection<User> getAllFriends(Long id) {
-        return userDbStorage.getAllFriends(id);
+        try {
+            return userDbStorage.getAllFriends(id);
+        } catch (EmptyResultDataAccessException ignored) {
+            return Collections.emptyList();
+        }
     }
 
     public Collection<User> getCommonFriends(Long id, Long friendId) {

@@ -15,9 +15,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
-import java.util.Optional;
+import java.util.HashSet;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -29,31 +29,38 @@ class FilmoRateApplicationTest {
     private final FilmDbStorage filmDbStorage;
 
     @Test
-    public void testFindUserById() {
+    void testFindUserById() {
 
         userStorage.create(new User("email@email", "login", "name", new Date(1999 - 11 - 11)));
         User userToGet = userStorage.get(1);
-        Optional<User> userOptional = Optional.of(userToGet);
 
-        assertThat(userOptional)
-                .isPresent()
-                .hasValueSatisfying(u ->
-                        assertThat(u).hasFieldOrPropertyWithValue("id", 1L)
-                );
+        assertEquals(1L, userToGet.getId());
     }
 
     @Test
-    public void testFindFilmByIdWithoutGenre() {
+    void testFindFilmByIdWithoutGenre() {
 
         filmDbStorage.create(new Film("name", "description", new Date(1999 - 10 - 11), 100,
                 new Mpa(1L, "Комедия")));
         Film filmToGet = filmDbStorage.get(1);
-        Optional<Film> filmOptional = Optional.of(filmToGet);
 
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(u ->
-                        assertThat(u).hasFieldOrPropertyWithValue("id", 1L)
-                );
+        assertEquals(1L, filmToGet.getId());
+    }
+
+    @Test
+    void testFilmUpdate() {
+
+        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11), 100,
+                new Mpa(1L, "Комедия"));
+
+        filmDbStorage.create(filmToUpdate);
+
+        Film updatedFilm = new Film(1L, "name", "description", new Date(1999 - 10 - 11), 300, new HashSet<>(), null,
+                new Mpa(1L, "Комедия"));
+
+        filmDbStorage.update(updatedFilm);
+        Film getUpdatedFilm = filmDbStorage.get(updatedFilm.getId());
+
+        assertEquals(300, getUpdatedFilm.getDuration());
     }
 }

@@ -19,15 +19,15 @@ public class GenreDbStorage {
     private static final String FIND_ALL_GENRES_QUERY = "SELECT * FROM GENRES";
     private static final String FIND_GENRE_BY_ID_QUERY = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
 
-    public Collection<Genre> getAllGenres() {
-        return jdbc.query(FIND_ALL_GENRES_QUERY, genreMapper);
-    }
-
     public Genre getGenre(long id) {
         try {
             return jdbc.queryForObject(FIND_GENRE_BY_ID_QUERY, genreMapper, id);
         } catch (EmptyResultDataAccessException ignored) {
             throw new NotFoundException("Такого жанра нет.");
         }
+    }
+
+    public Collection<Genre> getAllGenres() {
+        return jdbc.query(FIND_ALL_GENRES_QUERY, genreMapper);
     }
 }

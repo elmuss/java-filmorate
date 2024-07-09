@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mapper.UserRowMapper;
-import ru.yandex.practicum.filmorate.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -90,7 +89,7 @@ public class UserDbStorage implements UserStorage {
     protected void updateUser(Object... params) {
         int rowsUpdated = jdbc.update(UserDbStorage.UPDATE_QUERY, params);
         if (rowsUpdated == 0) {
-            throw new InternalServerException("Не удалось обновить данные");
+            throw new NotFoundException("Не удалось обновить данные");
         }
     }
 
@@ -150,22 +149,22 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> getAllFriends(Long id) {
-        if (get(id) == null) {
+        User currentUser = get(id);
+
+        if (currentUser == null) {
             throw new NotFoundException("Пользователя с id" + id + " нет, добавление в друзья невозможно");
         }
 
-        try {
-            List<Long> listOfFriendsId = jdbc.queryForList(FIND_FRIENDS_QUERY, Long.class, id);
-            Collection<User> friends = new HashSet<>();
-            for (Long friendId : listOfFriendsId) {
-                if (!listOfFriendsId.contains(get(friendId))) {
-                    friends.add(get(friendId));
-                }
+        List<Long> listOfFriendsId = jdbc.queryForList(FIND_FRIENDS_QUERY, Long.class, id);
+        Collection<User> friends = new HashSet<>();
+        for (Long friendId : listOfFriendsId) {
+            User currentFriend = get(friendId);
+
+            if (!friends.contains(currentFriend)) {
+                friends.add(currentFriend);
             }
-            return friends;
-        } catch (EmptyResultDataAccessException ignored) {
-            return Collections.emptyList();
         }
+        return friends;
     }
 
     @Override

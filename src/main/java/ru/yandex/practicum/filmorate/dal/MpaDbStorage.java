@@ -26,6 +26,12 @@ public class MpaDbStorage {
     }
 
     public Collection<Mpa> getAllMpa() {
-        return jdbc.query("SELECT * FROM MPA", mpaMapper);
+        try {
+            return jdbc.query("SELECT * FROM MPA", mpaMapper);
+        } catch (EmptyResultDataAccessException ignored) {
+            throw new NotFoundException("Такого рейтинга нет.");
+        }
     }
+
+
 }

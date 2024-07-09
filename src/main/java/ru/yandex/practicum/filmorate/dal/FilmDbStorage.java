@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.dal;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,12 +9,11 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.MpaRowMapper;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectArgumentException;
-import ru.yandex.practicum.filmorate.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
@@ -28,6 +26,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     protected final JdbcTemplate jdbc;
+    protected final UserDbStorage userDbStorage;
     protected final FilmRowMapper mapper;
     protected final GenreRowMapper genreMapper;
     protected final MpaRowMapper mpaMapper;
@@ -43,21 +42,18 @@ public class FilmDbStorage implements FilmStorage {
     private static final String INSERT_FILMS_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?," +
             "RELEASE_DATE = ?, DURATION = ?, FILM_MPA = ? WHERE FILM_ID = ?";
+    private static final String UPDATE_GENRES_QUERY = "UPDATE FILMS_GENRES SET FILM_ID = ?, GENRE_ID = ?";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM FILMS WHERE id = ?";
     private static final String INSERT_LIKE_QUERY = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     private static final String DELETE_LIKE_QUERY = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
-    private static final String GET_POPULAR_FILMS = "SELECT  FILM_ID  FROM LIKES GROUP BY FILM_ID ORDER BY COUNT(USER_ID) DESC";
+    private static final String GET_POPULAR_FILMS = "SELECT  FILM_ID  FROM LIKES GROUP BY FILM_ID ORDER BY COUNT(USER_ID) DESC LIMIT(?)";
 
     @Override
     public Film create(Film film) {
         validate(film);
         Long mpaId = film.getMpa().getId();
         List<Genre> genres = film.getGenres();
-        try {
-            mpaStorage.get(mpaId);
-        } catch (NotFoundException e) {
-            throw new IncorrectArgumentException("Введен некорректный запрос");
-        }
+        mpaStorage.get(mpaId);
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -75,27 +71,21 @@ public class FilmDbStorage implements FilmStorage {
         film.setGenres(new ArrayList<>());
         if (genres != null) {
             for (Genre genre : genres) {
-                try {
-                    if (genreStorage.getGenre(genre.getId()) != null) {
-                        film.getGenres().add(genreStorage.getGenre(genre.getId()));
-                    }
-                } catch (NotFoundException e) {
-                    throw new IncorrectArgumentException("Введен некорректный запрос");
+
+                Genre currentGenre = genreStorage.getGenre(genre.getId());
+                if (currentGenre != null) {
+                    film.getGenres().add(currentGenre);
+                    jdbc.update(connection -> {
+                        PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
+                        stmt.setLong(1, film.getId());
+                        stmt.setLong(2, genre.getId());
+                        return stmt;
+                    });
                 }
             }
         }
         film.setMpa(mpaStorage.get(mpaId));
 
-        if (genres != null) {
-            for (Genre genre : genres) {
-                jdbc.update(connection -> {
-                    PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
-                    stmt.setLong(1, film.getId());
-                    stmt.setLong(2, genre.getId());
-                    return stmt;
-                });
-            }
-        }
         return film;
     }
 
@@ -116,38 +106,55 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId()
         );
+
+        List<Genre> genres = film.getGenres();
+        film.setGenres(new ArrayList<>());
+
+        if (genres != null) {
+            for (Genre genre : genres) {
+                updateGenres(
+                        film.getId(),
+                        genre.getId()
+                );
+            }
+            film.setGenres(genres);
+        }
+
         return film;
     }
 
     protected void updateFilm(Object... params) {
         int rowsUpdated = jdbc.update(FilmDbStorage.UPDATE_QUERY, params);
         if (rowsUpdated == 0) {
-            throw new InternalServerException("Не удалось обновить данные");
+            throw new NotFoundException("Не удалось обновить данные");
+        }
+
+    }
+
+    protected void updateGenres(Object... params) {
+        int rowsUpdated = jdbc.update(FilmDbStorage.UPDATE_GENRES_QUERY, params);
+        if (rowsUpdated == 0) {
+            throw new NotFoundException("Не удалось обновить данные");
         }
     }
 
     @Override
     public Film get(long id) {
-        try {
-            Film filmToReturn = jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
-            Long mpaId = jdbc.queryForObject(FIND_MPA_QUERY, Long.class, id);
-            filmToReturn.setMpa(mpaStorage.get(mpaId));
+        Film filmToReturn = jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
+        Long mpaId = jdbc.queryForObject(FIND_MPA_QUERY, Long.class, id);
+        filmToReturn.setMpa(mpaStorage.get(mpaId));
 
-            List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
-            List<Genre> listOfGenres = new ArrayList<>();
+        List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
+        List<Genre> listOfGenres = new ArrayList<>();
 
-            if (!listOfGenresId.isEmpty()) {
-                for (Long genreId : listOfGenresId) {
-                    if (!listOfGenres.contains(genreStorage.getGenre(genreId))) {
-                        listOfGenres.add(genreStorage.getGenre(genreId));
-                    }
-                }
+        for (Long genreId : listOfGenresId) {
+            Genre currentGenre = genreStorage.getGenre(genreId);
+            if (!listOfGenres.contains(currentGenre)) {
+                listOfGenres.add(currentGenre);
             }
-            filmToReturn.setGenres(listOfGenres);
-            return filmToReturn;
-        } catch (EmptyResultDataAccessException ignored) {
-            throw new NotFoundException("Такого фильма нет.");
         }
+        filmToReturn.setGenres(listOfGenres);
+        return filmToReturn;
     }
 
     @Override
@@ -162,11 +169,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Long id, Long userId) {
-        if (get(id) != null) {
-            get(id).getLikes().add(userId);
-        } else {
-            throw new NotFoundException("Такого фильма нет.");
-        }
+        Film currentFilm = get(id);
+        User currentUser = userDbStorage.get(userId);
+        currentFilm.getLikes().add(userId);
 
         jdbc.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(INSERT_LIKE_QUERY, new String[]{});
@@ -178,22 +183,21 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public boolean deleteLike(Long id, Long userId) {
-        if (get(id) != null) {
-            get(id).getLikes().remove(userId);
-        } else {
-            throw new NotFoundException("Такого фильма нет.");
-        }
+        Film currentFilm = get(id);
+        User currentUser = userDbStorage.get(userId);
+        currentFilm.getLikes().remove(userId);
+
         return jdbc.update(DELETE_LIKE_QUERY, id, userId) > 0;
     }
 
     @Override
     public List<Film> getPopular(Long count) {
-        List<Long> listOfFilms = jdbc.queryForList(GET_POPULAR_FILMS, Long.class);
+        List<Long> listOfFilms = jdbc.queryForList(GET_POPULAR_FILMS, Long.class, count);
         List<Film> popularFilms = new ArrayList<>();
 
         for (Long filmId : listOfFilms) {
             popularFilms.add(get(filmId));
         }
-        return popularFilms.stream().limit(count).toList();
+        return popularFilms;
     }
 }
