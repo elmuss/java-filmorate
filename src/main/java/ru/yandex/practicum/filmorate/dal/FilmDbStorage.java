@@ -40,10 +40,10 @@ public class FilmDbStorage implements FilmStorage {
     private static final String INSERT_QUERY = "INSERT INTO FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE," +
             "DURATION, FILM_MPA) VALUES (?, ?, ?, ?, ?)";
     private static final String INSERT_FILMS_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    private static final String DELETE_FILMS_GENRES_QUERY = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?," +
             "RELEASE_DATE = ?, DURATION = ?, FILM_MPA = ? WHERE FILM_ID = ?";
-    private static final String UPDATE_GENRES_QUERY = "UPDATE FILMS_GENRES SET FILM_ID = ?, GENRE_ID = ?";
-    private static final String DELETE_BY_ID_QUERY = "DELETE FROM FILMS WHERE id = ?";
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
     private static final String INSERT_LIKE_QUERY = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     private static final String DELETE_LIKE_QUERY = "DELETE FROM LIKES WHERE FILM_ID = ? AND USER_ID = ?";
     private static final String GET_POPULAR_FILMS = "SELECT  FILM_ID  FROM LIKES GROUP BY FILM_ID ORDER BY COUNT(USER_ID) DESC LIMIT(?)";
@@ -97,42 +97,46 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        validate(film);
-        updateFilm(
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getId()
-        );
+        try {
+            Film filmToUpdate = get(film.getId());
+            List<Genre> genresToUpdate = filmToUpdate.getGenres();
 
-        List<Genre> genres = film.getGenres();
-        film.setGenres(new ArrayList<>());
-
-        if (genres != null) {
-            for (Genre genre : genres) {
-                updateGenres(
-                        film.getId(),
-                        genre.getId()
-                );
+            if (genresToUpdate != null) {
+                jdbc.update(DELETE_FILMS_GENRES_QUERY, filmToUpdate.getId());
             }
-            film.setGenres(genres);
-        }
 
-        return film;
+            validate(film);
+            updateFilm(
+                    film.getName(),
+                    film.getDescription(),
+                    film.getReleaseDate(),
+                    film.getDuration(),
+                    film.getMpa().getId(),
+                    film.getId()
+            );
+
+            List<Genre> updatedGenres = film.getGenres();
+            film.setGenres(new ArrayList<>());
+
+            if (updatedGenres != null) {
+                for (Genre genre : updatedGenres) {
+                    jdbc.update(connection -> {
+                        PreparedStatement stmt = connection.prepareStatement(INSERT_FILMS_GENRES_QUERY, new String[]{});
+                        stmt.setLong(1, film.getId());
+                        stmt.setLong(2, genre.getId());
+                        return stmt;
+                    });
+                }
+                film.setGenres(updatedGenres);
+            }
+            return film;
+        } catch (RuntimeException e) {
+            throw new NotFoundException("Такого фильма нет.");
+        }
     }
 
     protected void updateFilm(Object... params) {
-        int rowsUpdated = jdbc.update(FilmDbStorage.UPDATE_QUERY, params);
-        if (rowsUpdated == 0) {
-            throw new NotFoundException("Не удалось обновить данные");
-        }
-
-    }
-
-    protected void updateGenres(Object... params) {
-        int rowsUpdated = jdbc.update(FilmDbStorage.UPDATE_GENRES_QUERY, params);
+        int rowsUpdated = jdbc.update(UPDATE_QUERY, params);
         if (rowsUpdated == 0) {
             throw new NotFoundException("Не удалось обновить данные");
         }

@@ -22,6 +22,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleError(final RuntimeException e) {
         log.info("RuntimeException {}", e.getMessage());
         return Map.of("Произошла ошибка!", e.getMessage());

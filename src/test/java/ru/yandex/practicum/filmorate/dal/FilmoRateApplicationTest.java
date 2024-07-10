@@ -11,11 +11,13 @@ import ru.yandex.practicum.filmorate.dal.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,18 +41,25 @@ class FilmoRateApplicationTest {
 
     @Test
     void testFilmUpdate() {
+        List<Genre> genresToUpdate = new ArrayList<>();
+        genresToUpdate.add(new Genre(1L, "Комедия"));
+        genresToUpdate.add(new Genre(6L, "Боевик"));
 
-        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11), 100,
-                new Mpa(1L, "Комедия"));
+
+        List<Genre> updatedGenres = new ArrayList<>();
+        updatedGenres.add(new Genre(1L, "Комедия"));
+
+
+        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11), 100, new Mpa(1L, "Комедия"));
+        filmToUpdate.setGenres(genresToUpdate);
 
         filmDbStorage.create(filmToUpdate);
 
-        Film updatedFilm = new Film(1L, "name", "description", new Date(1999 - 10 - 11), 300, new HashSet<>(), null,
-                new Mpa(1L, "Комедия"));
+        filmToUpdate.setGenres(updatedGenres);
 
-        filmDbStorage.update(updatedFilm);
-        Film getUpdatedFilm = filmDbStorage.get(updatedFilm.getId());
+        filmDbStorage.update(filmToUpdate);
+        Film getUpdatedFilm = filmDbStorage.get(filmToUpdate.getId());
 
-        assertEquals(300, getUpdatedFilm.getDuration());
+        assertEquals(100, getUpdatedFilm.getDuration());
     }
 }

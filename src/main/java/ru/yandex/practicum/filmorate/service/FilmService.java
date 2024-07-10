@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dal.UserDbStorage;
@@ -34,13 +33,17 @@ public class FilmService {
     }
 
     public Film update(Film newFilm) {
-        return filmDbStorage.update(newFilm);
+        try {
+            return filmDbStorage.update(newFilm);
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Такого фильма нет.");
+        }
     }
 
     public Film get(long id) {
         try {
             return filmDbStorage.get(id);
-        } catch (EmptyResultDataAccessException ignored) {
+        } catch (NotFoundException e) {
             throw new NotFoundException("Такого фильма нет.");
         }
     }
