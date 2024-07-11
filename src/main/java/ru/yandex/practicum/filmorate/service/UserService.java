@@ -57,7 +57,7 @@ public class UserService {
     public Collection<User> getAllFriends(Long id) {
         try {
             return userDbStorage.getAllFriends(id);
-        } catch (EmptyResultDataAccessException ignored) {
+        } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
     }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -130,7 +131,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.setGenres(updatedGenres);
             }
             return film;
-        } catch (RuntimeException e) {
+        } catch (NullPointerException e) {
             throw new NotFoundException("Такого фильма нет.");
         }
     }
@@ -144,21 +145,26 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film get(long id) {
-        Film filmToReturn = jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
-        Long mpaId = jdbc.queryForObject(FIND_MPA_QUERY, Long.class, id);
-        filmToReturn.setMpa(mpaStorage.get(mpaId));
+        try {
+            Film filmToReturn = jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
 
-        List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
-        List<Genre> listOfGenres = new ArrayList<>();
+            Long mpaId = jdbc.queryForObject(FIND_MPA_QUERY, Long.class, id);
+            filmToReturn.setMpa(mpaStorage.get(mpaId));
 
-        for (Long genreId : listOfGenresId) {
-            Genre currentGenre = genreStorage.getGenre(genreId);
-            if (!listOfGenres.contains(currentGenre)) {
-                listOfGenres.add(currentGenre);
+            List<Long> listOfGenresId = jdbc.queryForList(FIND_LIST_OF_GENRES_QUERY, Long.class, id);
+            List<Genre> listOfGenres = new ArrayList<>();
+
+            for (Long genreId : listOfGenresId) {
+                Genre currentGenre = genreStorage.getGenre(genreId);
+                if (!listOfGenres.contains(currentGenre)) {
+                    listOfGenres.add(currentGenre);
+                }
             }
+            filmToReturn.setGenres(listOfGenres);
+            return filmToReturn;
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Такого фильма нет.");
         }
-        filmToReturn.setGenres(listOfGenres);
-        return filmToReturn;
     }
 
     @Override

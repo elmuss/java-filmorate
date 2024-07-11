@@ -33,19 +33,11 @@ public class FilmService {
     }
 
     public Film update(Film newFilm) {
-        try {
-            return filmDbStorage.update(newFilm);
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Такого фильма нет.");
-        }
+        return filmDbStorage.update(newFilm);
     }
 
     public Film get(long id) {
-        try {
-            return filmDbStorage.get(id);
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Такого фильма нет.");
-        }
+        return filmDbStorage.get(id);
     }
 
     public void delete(long id) {

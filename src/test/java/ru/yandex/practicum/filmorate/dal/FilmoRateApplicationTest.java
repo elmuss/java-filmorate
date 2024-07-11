@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dal.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.dal.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -50,7 +52,8 @@ class FilmoRateApplicationTest {
         updatedGenres.add(new Genre(1L, "Комедия"));
 
 
-        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11), 100, new Mpa(1L, "Комедия"));
+        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11),
+                100, new Mpa(1L, "Комедия"));
         filmToUpdate.setGenres(genresToUpdate);
 
         filmDbStorage.create(filmToUpdate);
@@ -60,6 +63,32 @@ class FilmoRateApplicationTest {
         filmDbStorage.update(filmToUpdate);
         Film getUpdatedFilm = filmDbStorage.get(filmToUpdate.getId());
 
-        assertEquals(100, getUpdatedFilm.getDuration());
+        assertEquals(1, getUpdatedFilm.getGenres().size());
+    }
+
+    @Test
+    void testFilmUpdateUnknown() {
+        List<Genre> genresToUpdate = new ArrayList<>();
+        genresToUpdate.add(new Genre(1L, "Комедия"));
+        genresToUpdate.add(new Genre(6L, "Боевик"));
+
+        Film filmToUpdate = new Film("name", "description", new Date(1999 - 10 - 11),
+                100, new Mpa(1L, "Комедия"));
+        filmToUpdate.setGenres(genresToUpdate);
+
+        Exception exception = assertThrows(
+                NotFoundException.class, () -> filmDbStorage.update(filmToUpdate)
+        );
+
+        assertEquals("Такого фильма нет.", exception.getMessage());
+    }
+
+    @Test
+    void testFilmGetUnknown() {
+        Exception exception = assertThrows(
+                NotFoundException.class, () -> filmDbStorage.get(1000000L)
+        );
+
+        assertEquals("Такого фильма нет.", exception.getMessage());
     }
 }
