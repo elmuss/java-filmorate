@@ -6,19 +6,19 @@ import java.util.Collection;
 import java.util.List;
 
 public interface FilmStorage {
-    void create(Film film);
+    Film create(Film film);
 
-    void update(Film film);
+    Film update(Film film);
 
     Film get(long id);
 
-    void delete(long id);
+    boolean delete(long id);
 
     Collection<Film> getAll();
 
     void addLike(Long id, Long userId);
 
-    void deleteLike(Long id, Long userId);
+    boolean deleteLike(Long id, Long userId);
 
     List<Film> getPopular(Long count);
 

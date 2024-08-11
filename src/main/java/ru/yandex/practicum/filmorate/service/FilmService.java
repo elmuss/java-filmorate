@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dal.UserDbStorage;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectArgumentException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,47 +17,50 @@ import java.util.List;
 @AllArgsConstructor
 public class FilmService {
 
-    InMemoryFilmStorage filmStorage;
-    InMemoryUserStorage userStorage;
+    FilmDbStorage filmDbStorage;
+    UserDbStorage userDbStorage;
 
     public Collection<Film> getAll() {
-        return filmStorage.getAll();
+        return filmDbStorage.getAll();
     }
 
-    public void create(Film film) {
-        filmStorage.create(film);
+    public Film create(Film film) {
+        try {
+            return filmDbStorage.create(film);
+        } catch (NotFoundException e) {
+            throw new IncorrectArgumentException("Введен некорректный запрос");
+        }
     }
 
-    public void update(Film newFilm) {
-        filmStorage.update(newFilm);
+    public Film update(Film newFilm) {
+        return filmDbStorage.update(newFilm);
     }
 
     public Film get(long id) {
-        return filmStorage.get(id);
+        return filmDbStorage.get(id);
     }
 
     public void delete(long id) {
-        filmStorage.delete(id);
+        filmDbStorage.delete(id);
     }
 
     public void addLike(Long id, Long userId) {
-        if (userStorage.getUsers().containsKey(userId)) {
-            filmStorage.addLike(id, userId);
-        } else {
+        try {
+            filmDbStorage.addLike(id, userId);
+        } catch (NotFoundException e) {
             throw new NotFoundException("Такого пользователя нет.");
         }
     }
 
     public void deleteLike(Long id, Long userId) {
-        if (userStorage.getUsers().containsKey(userId)) {
-            filmStorage.deleteLike(id, userId);
-        } else {
+        try {
+            filmDbStorage.deleteLike(id, userId);
+        } catch (NotFoundException e) {
             throw new NotFoundException("Такого пользователя нет.");
         }
     }
 
     public List<Film> getPopular(Long count) {
-        return filmStorage.getPopular(count);
+        return filmDbStorage.getPopular(count);
     }
-
 }

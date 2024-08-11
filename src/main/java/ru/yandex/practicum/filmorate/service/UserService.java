@@ -1,55 +1,68 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.UserDbStorage;
+import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
-    InMemoryUserStorage userStorage;
+    private final UserDbStorage userDbStorage;
+
+    public User create(User user) {
+        if (user.getEmail().isEmpty()) {
+            throw new ConditionsNotMetException("Имейл должен быть указан");
+        }
+        userDbStorage.create(user);
+        log.info("Добавлен новый пользователь, id={}", user.getId());
+
+        return user;
+    }
 
     public Collection<User> getAll() {
-        return userStorage.getAll();
+        return userDbStorage.getAll();
     }
 
-    public void create(User user) {
-        userStorage.create(user);
-        log.info("Добавлен новый пользователь, id={}", user.getId());
-    }
-
-    public void update(User newUser) {
-        userStorage.update(newUser);
+    public User update(User newUser) {
+        userDbStorage.update(newUser);
+        return newUser;
     }
 
     public User get(long id) {
-        return userStorage.get(id);
+        return userDbStorage.get(id);
     }
 
     public void delete(long id) {
-        userStorage.delete(id);
+        userDbStorage.delete(id);
     }
 
     public void addFriend(Long id, Long friendId) {
-        userStorage.addFriend(id, friendId);
+        userDbStorage.addFriend(id, friendId);
         log.info("Добавлен новый друг с id={}", friendId);
     }
 
     public void deleteFromFriends(Long id, Long friendId) {
-        userStorage.deleteFromFriends(id, friendId);
+        userDbStorage.deleteFromFriends(id, friendId);
         log.info("Удален друг с id={}", friendId);
     }
 
     public Collection<User> getAllFriends(Long id) {
-        return userStorage.getAllFriends(id);
+        try {
+            return userDbStorage.getAllFriends(id);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 
     public Collection<User> getCommonFriends(Long id, Long friendId) {
-        return userStorage.getCommonFriends(id, friendId);
+        return userDbStorage.getCommonFriends(id, friendId);
     }
 }

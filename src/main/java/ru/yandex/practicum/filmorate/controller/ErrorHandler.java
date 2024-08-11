@@ -15,12 +15,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIncorrectArgument(final IncorrectArgumentException e) {
         log.info("IllegalArgumentException {}", e.getMessage());
         return Map.of("Передан неверный аргумент", e.getMessage());
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleError(final RuntimeException e) {
         log.info("RuntimeException {}", e.getMessage());
         return Map.of("Произошла ошибка!", e.getMessage());

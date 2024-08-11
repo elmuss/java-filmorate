@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+/*package ru.yandex.practicum.filmorate.storage;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -134,4 +134,4 @@ public class InMemoryUserStorage implements UserStorage {
         commonFriendsList.retainAll(getAllFriends(friendId));
         return commonFriendsList;
     }
-}
+}*/
